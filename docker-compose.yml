@@ -11,8 +11,8 @@ services:
     environment:
       # set database credentials
       DB_HOST: mysql
-      DB_NAME: flask
-      DB_USER: flask
+      DB_NAME: mysql
+      DB_USER: mysql
       DB_PASSWORD: password
 
     links:
@@ -39,8 +39,8 @@ services:
       # credentials
     environment:
       MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: flask
-      MYSQL_USER: flask
+      MYSQL_DATABASE: mysql
+      MYSQL_USER: mysql
       MYSQL_PASSWORD: password
 
 # volumes definition here
