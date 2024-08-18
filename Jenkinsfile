@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Clone your repository
-                git 'https://github.com/yourusername/yourrepo.git'
+                git 'https://github.com/EITANPOD/flask-app-project.git'
             }
         }
 
