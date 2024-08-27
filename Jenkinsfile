@@ -12,6 +12,13 @@ pipeline {
             }
         }
 
+        stage('Download Docker Compose') {
+            steps {
+                sh 'curl -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-linux-x86_64 -o /usr/local/bin/docker-compose'  
+                sh 'chmod +x /usr/local/bin/docker-compose'
+            }
+        }
+
         stage('Start Application') {
             steps {
                 sh 'docker-compose up -d'
