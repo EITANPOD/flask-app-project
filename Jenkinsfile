@@ -1,41 +1,50 @@
 pipeline {
     agent any
-
+    
+    environment {
+        DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
+    }
+    
     stages {
-        stage('Checkout') {
+        stage('Test') {
             steps {
-                // Clone your repository
+                script {
+                    def status_code = sh(script: "curl -o /dev/null -s -w '%{http_code}' http://flask_app:5000", returnStdout: true).trim()
+                    if (status_code != "200") {
+                        error "Test Failed: Flask server returned status code ${status_code}."
+                    } else {
+                        echo "Test Passed: Flask server is running."
+                    }
+                }
+            }
+        }
+        
+        stage('Clone Repository') {
+            steps {
                 git 'https://github.com/EITANPOD/flask-app-project.git'
             }
         }
-
-        stage('Build') {
+        
+        stage('Build and Push Docker Image') {
             steps {
-                // Build Docker images for Flask and MySQL
-                sh 'docker-compose -f docker-compose.yml build'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                // Run tests against the Flask app
-                sh 'docker-compose -f docker-compose.yml run app pytest tests/'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                // Deploy the app (here we just bring the containers up)
-                sh 'docker-compose -f docker-compose.yml up -d'
+                script {
+                    // Log in to DockerHub
+                    sh "echo \$DOCKER_HUB_CREDENTIALS_PSW | docker login -u \$DOCKER_HUB_CREDENTIALS_USR --password-stdin"
+                    
+                    // Build the Docker image
+                    sh "docker build -t eitanpod/my-docker-repo:tagname -f Dockerfile ."
+                    
+                    // Push the image to DockerHub
+                    sh "docker push eitanpod/my-docker-repo:tagname"
+                }
             }
         }
     }
-
+    
     post {
         always {
-            // Cleanup Docker containers
-            sh 'docker-compose -f docker-compose.yml down'
+            // Log out from DockerHub
+            sh "docker logout"
         }
     }
 }
-
