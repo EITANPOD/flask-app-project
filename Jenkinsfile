@@ -1,50 +1,50 @@
 pipeline {
     agent any
-    
+
     environment {
         DOCKER_HUB_CREDENTIALS = credentials('docker-hub-credentials')
     }
-    
+
     stages {
-        stage('Test') {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Start Application') {
+            steps {
+                sh 'docker-compose up -d'
+                sh 'sleep 30' // Give some time for the app to start
+            }
+        }
+
+        stage('Run Test') {
             steps {
                 script {
-                    def status_code = sh(script: "curl -o /dev/null -s -w '%{http_code}' http://flask_app:5000", returnStdout: true).trim()
-                    if (status_code != "200") {
-                        error "Test Failed: Flask server returned status code ${status_code}."
-                    } else {
-                        echo "Test Passed: Flask server is running."
+                    def response = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:5000', returnStdout: true).trim()
+                    if (response != "200") {
+                        error "Test failed: Flask app returned status code ${response}"
                     }
                 }
             }
         }
-        
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/EITANPOD/flask-app-project.git'
-            }
-        }
-        
-        stage('Build and Push Docker Image') {
+
+        stage('Build and Push Images') {
             steps {
                 script {
-                    // Log in to DockerHub
                     sh "echo \$DOCKER_HUB_CREDENTIALS_PSW | docker login -u \$DOCKER_HUB_CREDENTIALS_USR --password-stdin"
-                    
-                    // Build the Docker image
-                    sh "docker build -t eitanpod/my-docker-repo:tagname -f Dockerfile ."
-                    
-                    // Push the image to DockerHub
-                    sh "docker push eitanpod/my-docker-repo:tagname"
+                    sh 'docker-compose build'
+                    sh 'docker-compose push'
                 }
             }
         }
     }
-    
+
     post {
         always {
-            // Log out from DockerHub
-            sh "docker logout"
+            sh 'docker-compose down'
+            sh 'docker logout'
         }
     }
 }
