@@ -9,7 +9,6 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 git 'https://github.com/EITANPOD/flask-app-project.git'
-                cd 'flask-app-project'
             }
         }
 
