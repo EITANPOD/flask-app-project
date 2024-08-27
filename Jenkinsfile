@@ -9,6 +9,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 git 'https://github.com/EITANPOD/flask-app-project.git'
+                cd 'flask-app-project'
             }
         }
 
@@ -22,14 +23,15 @@ pipeline {
         stage('Start Application') {
             steps {
                 sh 'docker-compose up -d'
-                sh 'sleep 150' // Give some time for the app to start
+                sh 'sleep 200' // Give some time for the app to start
+                sh 'docker-compose logs'
             }
         }
 
         stage('Run Test') {
             steps {
                 script {
-                    def response = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://localhost:5000', returnStdout: true).trim()
+                    def response = sh(script: 'curl -s -o /dev/null -w "%{http_code}" http://flask_app:5000', returnStdout: true).trim()
                     if (response != "200") {
                         error "Test failed: Flask app returned status code ${response}"
                     }
