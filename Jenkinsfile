@@ -22,7 +22,7 @@ pipeline {
         stage('Start Application') {
             steps {
                 sh 'docker-compose up -d'
-                sh 'sleep 90' // Give some time for the app to start
+                sh 'sleep 150' // Give some time for the app to start
             }
         }
 
