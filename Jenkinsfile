@@ -22,7 +22,7 @@ pipeline {
         stage('Start Application') {
             steps {
                 sh 'docker-compose up -d'
-                sh 'sleep 30' // Give some time for the app to start
+                sh 'sleep 90' // Give some time for the app to start
             }
         }
 
@@ -41,8 +41,8 @@ pipeline {
             steps {
                 script {
                     sh "echo \$DOCKER_HUB_CREDENTIALS_PSW | docker login -u \$DOCKER_HUB_CREDENTIALS_USR --password-stdin"
-                    sh 'docker-compose build'
-                    sh 'docker-compose push'
+                    sh 'docker build -t eitanpod/my-docker-repo:flask_app -f /var/jenkins_home/workspace/pipelinetest/flask-app-project/Dockerfile .'
+                    sh 'docker docker push eitanpod/my-docker-repo:flask_app'
                 }
             }
         }
